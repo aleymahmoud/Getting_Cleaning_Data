@@ -1,0 +1,87 @@
+# Download Data file 
+data_url <- "http://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+
+download.file(url = data_url,destfile = "UCI HAR Data.zip",method = "curl")
+
+# Unzip Data 
+unzip(zipfile = "UCI HAR Data.zip")
+
+
+# load features file 
+
+features <- read.table(file = "./UCI HAR Data/features.txt",stringsAsFactors = F)
+
+colnames(features) <- c("id","feature_name")
+
+features <- rbind(features,c("562","activity_label"))
+features <- rbind(features,c("563","subject"))
+
+
+# load activity_labels file 
+
+activity_labels <- read.table(file = "./UCI HAR Data/activity_labels.txt")
+
+colnames(activity_labels) <- c("activity_label","activity_name")
+
+# load train data
+X_train <- read.table(file = "./UCI HAR Data/train/X_train.txt")
+y_train <- read.table(file = "./UCI HAR Data/train/y_train.txt")
+subject_train <- read.table(file = "./UCI HAR Data/train/subject_train.txt")
+
+train <- cbind(X_train,y_train,subject_train)
+colnames(train) <- features$feature_name
+
+
+# load test data
+X_test <- read.table(file = "./UCI HAR Data/test/X_test.txt")
+y_test <- read.table(file = "./UCI HAR Data/test/y_test.txt")
+subject_test <- read.table(file = "./UCI HAR Data/test/subject_test.txt")
+
+test   <- cbind(X_test,y_test,subject_test)
+colnames(test) <- features$feature_name
+
+
+#01- Merges the training and the test sets to create one data set.
+UCI_HAR_DATA <- rbind(train,test) 
+
+
+# add activity_labels 
+library(plyr)
+UCI_HAR_DATA <- plyr::join(x = UCI_HAR_DATA,y=activity_labels, by = "activity_label")
+
+
+library(dplyr)
+library(janitor)
+
+UCI_HAR_DATA <- janitor::clean_names(UCI_HAR_DATA,case = "snake")
+
+UCI_HAR_DATA <- UCI_HAR_DATA %>% dplyr::select(activity_label,activity_name,subject,
+                                               contains("mean"),contains("std"))
+
+
+names(UCI_HAR_DATA)[2] = "activity"
+names(UCI_HAR_DATA) <-gsub("Acc"     , "accelerometer", names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("Gyro"    , "gyroscope"    , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("BodyBody", "body"         , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("Mag"     , "magnitude"    , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("^t"      , "time"         , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("^f"      , "frequency"    , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("tBody"   , "timeBody"     , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("-mean()" , "mean"         , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("-std()"  , "STDV"         , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("-freq()" , "frequency"    , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("angle"   , "angle"        , names(UCI_HAR_DATA))
+names(UCI_HAR_DATA) <-gsub("gravity" , "gravity"      , names(UCI_HAR_DATA))
+
+
+UCI_HAR_Summary <- UCI_HAR_DATA  %>%
+  group_by(subject, activity) %>%
+  summarise_all(funs(mean))
+
+
+write.csv(UCI_HAR_Summary,"UCI_HAR_Summary.csv")
+
+
+
+
+
