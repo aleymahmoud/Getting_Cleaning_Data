@@ -1,0 +1,17 @@
+01- Download Data file & Unizp it
+02- Load features file & assgin col names & add 2 more col names for the labels & subject
+03- Load activity_labels file & assgin col names 
+04- Load Xtrain data , Ytrain & Subject train
+05- Merge the 3 files by col & assgin the features valuse as col name 
+06- Load Xtest data , Ytest & Subject test
+07- Merge the 3 files by col & assgin the features valuse as col name 
+08- Merge the train & test dat set by row 
+09- Add data label names
+10- Convert col name to snake case using jainotor package
+11- select only cols with mean & std 
+12- give cols descriptive names
+13- calculate  average summary by subject & activity 
+14- save data into csv file.
+
+
+ 
